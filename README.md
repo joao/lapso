@@ -15,4 +15,5 @@ To run:
 ``make run``
 
 Settings are located in ``app.rb``.  
-If a website has thousands of entries in [Arquivo.pt](https://arquivo.pt), it will take a few hours to generate the video. You can keep tabs on the progress via the terminal output. The bottleneck is downloading the webpage's screenshots, as they are generated on demand.
+If a website has thousands of entries in [Arquivo.pt](https://arquivo.pt), it will take a few hours to generate the video. You can keep tabs on the progress via the terminal output.  
+The bottleneck is downloading the webpage's screenshots, as they are generated on demand.

@@ -1,7 +1,7 @@
 run:
 	ruby app.rb
 
-install:
+gem_install:
 	gem install mini_magick
 
 macos_install:

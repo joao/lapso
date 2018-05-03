@@ -1,6 +1,7 @@
 require 'open-uri'
 require 'json'
 require 'mini_magick'
+require 'date'
 
 # Requires (besides the above Ruby gems):
 # - imagemagick
@@ -21,7 +22,7 @@ require 'mini_magick'
 
 
 # Settings #####################################
-URL = "datewithdata.pt"
+URL = "publico.pt"
 URL_FILE = "#{URL.gsub('.', '-')}_items.json"
 MAX_ITEMS = 50
 INITIAL_OFFSET = 0
@@ -39,6 +40,7 @@ MOVS_DIR = "movs"
 @response_items = []
 SLEEP_DURATION = 10 # interval to sleep between requesting screenshots
 VIDEO_FPS = 12 # experiment with this for a slower or faster video
+DAYS_INTERVAL = 7 # Days interval, if there are lots of records in the same day
 
 
 # Methods #####################################
@@ -158,8 +160,8 @@ def download_screenshots
   data_size = data.size
 
   item_count = 0
-  previous_date = 0
-  data.reverse.each do |item|
+  previous_day = Date.parse(data.reverse[0]['tstamp'])
+  data.reverse.each_with_index do |item, index|
 
     # Get screenshot info
     link_to_screenshot = item['linkToScreenshot']
@@ -167,13 +169,14 @@ def download_screenshots
 
     puts "#{item_count+=1}/#{data_size}: #{timestamp}"
 
-    current_date = item['tstamp'][0..8].to_i
-    if current_date == previous_date
-      previous_date = current_date
-      puts "Same day as previous screenshot, skipping.."
+    #current_date = item['tstamp'][0..8].to_i
+    current_day = Date.parse(item['tstamp'])
+    if (current_day == previous_day && index != 0) || (current_day < previous_day)
+      previous_day = current_day
+      puts "Same day or not in #{DAYS_INTERVAL} days interval, skipping.."
       next
     end
-    previous_date = current_date
+    previous_day = current_day + DAYS_INTERVAL
 
     request_screenshot(link_to_screenshot, timestamp)
 
@@ -261,10 +264,10 @@ end
 
 # Run app #####################################
 def run
-  get_all_url_items
+  #get_all_url_items
   download_screenshots
-  write_timestamp
-  create_video
+  #write_timestamp
+  #create_video
 end
 
 run
