@@ -37,7 +37,7 @@ MOVS_DIR = "movs"
 @oldest_item_date = 0
 @newest_item_date = 0
 @response_items = []
-SLEEP_DURATION = 10 # for screenshots
+SLEEP_DURATION = 10 # interval to sleep between requesting screenshots
 VIDEO_FPS = 12
 
 
@@ -111,8 +111,6 @@ def get_all_url_items
 
     end
 
-    #puts response_items.to_json
-    #puts response_items.size
     # Write JSON to file
     File.write("#{JSON_DIR}/#{URL_FILE}", @response_items.to_json)
 
@@ -242,8 +240,7 @@ def create_video
   puts "Creating video..."
 
   # Check if video folder exists
-  Dir.mkdir(MOVS_DIR) unless Dir.exist?(MOVS_DIR
-    )
+  Dir.mkdir(MOVS_DIR) unless Dir.exist?(MOVS_DIR)
 
   # FFMPEG conversion of image sequence into video
   ffmpeg_command = "ffmpeg -r #{VIDEO_FPS} -pattern_type glob -i \'#{IMG_DIR}/timestamp/*.png\' -s hd720 -vcodec libx264 -crf 18 -preset slow -pix_fmt yuv420p #{MOVS_DIR}/#{URL_FILENAME}.mp4"
