@@ -1,27 +1,47 @@
 require 'open-uri'
 require 'json'
+require 'mini_magick'
 
+# Requires (besides the above Ruby gems):
+# - imagemagick
+# - ffmpeg
+#
+# Developed and test only on macOS,
+# but should work on any *nix.
+
+# Settings
 # Methods
 # - search_endpoint
 # - url_info
 # - get_all_url_items
 # - download_screenshot
 # - process items
+# - write timestamp
+# - create video
 
 
-# Settings
-URL = "publico.pt"
+# Settings #####################################
+URL = "datewithdata.pt"
 URL_FILE = "#{URL.gsub('.', '-')}_items.json"
 MAX_ITEMS = 50
 INITIAL_OFFSET = 0
 URL_FILENAME = URL.gsub('.', '-')
-DOWNLOAD_FOLDER = "img"
+JSON_DIR = "json"
+if URL.split('.').size == 2
+  IMG_DIR = "img/" + URL.split('.')[0]
+else
+  IMG_DIR = "img/" + URL.split('.')[0] + URL.split('.')[1]
+end
+MOVS_DIR = "movs"
 @total_items = 0
 @oldest_item_date = 0
 @newest_item_date = 0
-response_items = []
-SLEEP_DURATION = 2.5 # for screendshots
+@response_items = []
+SLEEP_DURATION = 10 # for screenshots
+VIDEO_FPS = 12
 
+
+# Methods #####################################
 
 # Arquivo.pt search for URL
 def search_endpoint(offset)
@@ -31,7 +51,7 @@ end
 
 # Get URL info
 def url_info
-  info_json = open(search_endpoint(INITIAL_OFFSET))
+  info_json = open(search_endpoint(INITIAL_OFFSET), :read_timeout => 20)
   info = JSON.parse(info_json.read)
   total_items = info['total_items'].to_i
   @total_items = total_items
@@ -72,40 +92,48 @@ def get_all_url_items
     number_of_requests = (@total_items / MAX_ITEMS).to_i + 1
     current_offset = 0
 
+    # Check if JSON dir exists
+    Dir.mkdir(JSON_DIR) unless Dir.exist?(JSON_DIR)
+
     # Make requests
-    (0..number_of_requests).each_with_index do |request, index|
+    (1..number_of_requests).each_with_index do |request, index|
 
       puts "#{index+1}/#{number_of_requests}: #{current_offset}—#{(current_offset+MAX_ITEMS)} of #{@total_items}"
       info_json = open(search_endpoint(current_offset))
       info = JSON.parse(info_json.read)
 
       # join arrays
-      response_items = response_items + info['response_items']
+      @response_items = @response_items + info['response_items']
+
 
       # increment current_offset
       current_offset = current_offset + MAX_ITEMS
-      puts
 
     end
 
     #puts response_items.to_json
     #puts response_items.size
     # Write JSON to file
-    File.write("#{URL_FILE}", response_items.to_json)
+    File.write("#{JSON_DIR}/#{URL_FILE}", @response_items.to_json)
 
   rescue
     puts "an error occurred retrieving items information"
+    exit
   end
+  puts
 
 end
 
 
 
 # Get screenshot
-def download_screenshot(link_to_screenshot, timestamp)
+def request_screenshot(link_to_screenshot, timestamp)
+
+    # Check if IMG directory exists for this URL
+    Dir.mkdir(IMG_DIR) unless Dir.exist?(IMG_DIR)
 
     screenshot_filename = "#{URL_FILENAME}_#{timestamp}.png"
-    screenshot_file = "#{DOWNLOAD_FOLDER}/#{screenshot_filename}"
+    screenshot_file = "#{IMG_DIR}/#{screenshot_filename}"
 
     # Screenshot existance check
     unless File.file?(screenshot_file)
@@ -120,69 +148,123 @@ end
 
 
 # Process items stored in JSON file
-def process_items
+def download_screenshots
 
   # Open file
-  file = File.read("#{URL_FILE}")
+  file = File.read("#{JSON_DIR}/#{URL_FILE}")
 
   # File to hash
   data = JSON.parse(file)
+  data_size = data.size
 
   item_count = 0
+  previous_date = 0
   data.reverse.each do |item|
 
     # Get screenshot info
     link_to_screenshot = item['linkToScreenshot']
     timestamp = item['tstamp']
+
+    puts "#{item_count+=1}/#{data_size}: #{timestamp}"
+
+    current_date = item['tstamp'][0..8].to_i
+    if current_date == previous_date
+      previous_date = current_date
+      puts "Same day as previous screenshot, skipping.."
+      next
+    end
+    previous_date = current_date
+
     
-    puts "#{item_count+=1}: #{timestamp}"
-    
-    download_screenshot(link_to_screenshot, timestamp)
+    request_screenshot(link_to_screenshot, timestamp)
 
   end
 
 end
 
-process_items
 
+# Write timestamp in images
+def write_timestamp
 
-exit
+  puts "Downloading screenshots..."
 
+  # Write timestamp output dir
+  timestamp_dir = "#{IMG_DIR}/timestamp"
+  Dir.mkdir(timestamp_dir) unless Dir.exist?(timestamp_dir)
 
+  # Get all the screenshots of the URL
+  screenshots = Dir.glob("#{IMG_DIR}/*.png").sort
+  screenshots_total = screenshots.size
 
+  # Iterate over the screenshots
+  screenshots.each_with_index do |screenshot, index|
+    date = screenshot.split('_')[1].split('.')[0]
+    year = date[0..3]
+    month = date[4..5]
+    day = date[6..7]
+    hour = date[8..9]
+    minutes = date[10..11]
+    seconds = date[12..13]
+    puts "#{index+1}/#{screenshots_total}: #{day}/#{month}/#{year} - #{hour}:#{minutes}"
 
+    timestamp = "\'#{day}/#{month}/#{year}\'"
+    timestamp_with_hour = "\'#{day}/#{month}/#{year} - #{hour}:#{minutes}\'"
 
+    img = MiniMagick::Image.open(screenshot)
+    img.crop "0x720+0+0"
+    img.combine_options do |i|
+      i.fill "black"
+      i.stroke "black"
+      i.strokewidth 1
+      # top corner, top  top, top-left !?! still have no clue...
+      i.draw "rectangle 1016,632 1232,688"
+      i.gravity "Northeast"
+      i.fill "white"
+      i.undercolor "black"
+      i.stroke "white"
+      i.strokewidth 1
+      i.font "Courier"
+      i.weight "bold"
+      i.pointsize 32
+      i.strokewidth 2
+      i.draw "text 60,650 #{timestamp}"
+    end
 
-begin
-  results_json = open(search_endpoint(INITIAL_OFFSET))
-  results = JSON.parse(results_json.read)
-  puts "Total items: #{results['total_items']}"
-
-  items = results['response_items']
-  puts "Items returned: #{items.size}"
-  puts
-
-  # Iterate over response
-  items.each_with_index do |item, index|
-
-    # Get item information
-    screenshot_link = item['linkToScreenshot']
-    timestamp = item['tstamp']
-    screenshot_filename = "#{URL_FILENAME}_#{timestamp}.png"
-    screenshot_file = "#{DOWNLOAD_FOLDER}/#{screenshot_filename}"
-    puts "#{index+1}: #{URL} - #{timestamp}"
-
-    # Screenshot existance check
-    next if File.file?(screenshot_file)
-
-    puts "Downloading screenshot..."
-    download = open(screenshot_link)
-    IO.copy_stream(download, screenshot_file)
-    puts
+    img.write(timestamp_dir + "/" + screenshot.split('/')[-1].split('.')[0] + ".png")
 
   end
 
-
-rescue
-
 end
+
+
+# Create Video from timestamped screenshots
+def create_video
+  puts "Creating video..."
+
+  # Check if video folder exists
+  Dir.mkdir(MOVS_DIR) unless Dir.exist?(MOVS_DIR
+    )
+
+  # FFMPEG conversion of image sequence into video
+  ffmpeg_command = "ffmpeg -r #{VIDEO_FPS} -pattern_type glob -i \'#{IMG_DIR}/timestamp/*.png\' -s hd720 -vcodec libx264 -crf 18 -preset slow -pix_fmt yuv420p #{MOVS_DIR}/#{URL_FILENAME}.mp4"
+  system(ffmpeg_command)
+
+  puts "Video created! :)"
+end
+
+# Cleanup
+def cleanup
+  # TODO: delete files after use
+end
+
+
+
+# Run app #####################################
+def run
+  get_all_url_items
+  download_screenshots
+  write_timestamp
+  create_video
+end
+
+run
