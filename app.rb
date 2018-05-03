@@ -38,7 +38,7 @@ MOVS_DIR = "movs"
 @newest_item_date = 0
 @response_items = []
 SLEEP_DURATION = 10 # interval to sleep between requesting screenshots
-VIDEO_FPS = 12
+VIDEO_FPS = 12 # experiment with this for a slower or faster video
 
 
 # Methods #####################################
@@ -51,7 +51,7 @@ end
 
 # Get URL info
 def url_info
-  info_json = open(search_endpoint(INITIAL_OFFSET), :read_timeout => 20)
+  info_json = open(search_endpoint(INITIAL_OFFSET))
   info = JSON.parse(info_json.read)
   total_items = info['total_items'].to_i
   @total_items = total_items
@@ -148,6 +148,8 @@ end
 # Process items stored in JSON file
 def download_screenshots
 
+  puts "Downloading screenshots..."
+
   # Open file
   file = File.read("#{JSON_DIR}/#{URL_FILE}")
 
@@ -173,7 +175,6 @@ def download_screenshots
     end
     previous_date = current_date
 
-    
     request_screenshot(link_to_screenshot, timestamp)
 
   end
@@ -184,7 +185,7 @@ end
 # Write timestamp in images
 def write_timestamp
 
-  puts "Downloading screenshots..."
+  puts "Writing timestamps..."
 
   # Write timestamp output dir
   timestamp_dir = "#{IMG_DIR}/timestamp"
@@ -196,6 +197,7 @@ def write_timestamp
 
   # Iterate over the screenshots
   screenshots.each_with_index do |screenshot, index|
+    # Extract date from filename
     date = screenshot.split('_')[1].split('.')[0]
     year = date[0..3]
     month = date[4..5]
@@ -208,6 +210,7 @@ def write_timestamp
     timestamp = "\'#{day}/#{month}/#{year}\'"
     timestamp_with_hour = "\'#{day}/#{month}/#{year} - #{hour}:#{minutes}\'"
 
+    # Write timestamp and crop image for 720p video
     img = MiniMagick::Image.open(screenshot)
     img.crop "0x720+0+0"
     img.combine_options do |i|
