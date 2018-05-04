@@ -28,19 +28,18 @@ MAX_ITEMS = 50
 INITIAL_OFFSET = 0
 URL_FILENAME = URL.gsub('.', '-')
 JSON_DIR = "json"
-if URL.split('.').size == 2
-  IMG_DIR = "img/" + URL.split('.')[0]
-else
-  IMG_DIR = "img/" + URL.split('.')[0] + URL.split('.')[1]
-end
-MOVS_DIR = "movs"
+URL.split('.').size == 2 ? IMG_DIR = "img/" + URL.split('.')[0] : IMG_DIR = "img/" + URL.split('.')[0] + URL.split('.')[1] # Images directory (screenshot and timestamped)
+MOVS_DIR = "movs" # Movies export directory
+SLEEP_DURATION = 6 # Interval to sleep between requesting screenshots
+VIDEO_FPS = 10 # Experiment with this for a slower or faster video
+DAYS_INTERVAL = 7 # Days interval, if there are lots of records in the same day
+
+
+# Global variables
 @total_items = 0
 @oldest_item_date = 0
 @newest_item_date = 0
 @response_items = []
-SLEEP_DURATION = 10 # interval to sleep between requesting screenshots
-VIDEO_FPS = 12 # experiment with this for a slower or faster video
-DAYS_INTERVAL = 7 # Days interval, if there are lots of records in the same day
 
 
 # Methods #####################################
@@ -170,10 +169,10 @@ def download_screenshots
     puts "#{item_count+=1}/#{data_size}: #{timestamp}"
 
     #current_date = item['tstamp'][0..8].to_i
-    current_day = Date.parse(item['tstamp'])
+    current_day = Date.parse(timestamp)
     if (current_day == previous_day && index != 0) || (current_day < previous_day)
-      previous_day = current_day
-      puts "Same day or not in #{DAYS_INTERVAL} days interval, skipping.."
+      #previous_day = current_day
+      puts "Same day or not in #{DAYS_INTERVAL} days interval, skipping..."
       next
     end
     previous_day = current_day + DAYS_INTERVAL
@@ -215,6 +214,7 @@ def write_timestamp
 
     # Write timestamp and crop image for 720p video
     img = MiniMagick::Image.open(screenshot)
+    img.resize "1280x"
     img.crop "0x720+0+0"
     img.combine_options do |i|
       i.fill "black"
@@ -264,10 +264,10 @@ end
 
 # Run app #####################################
 def run
-  #get_all_url_items
+  get_all_url_items
   download_screenshots
-  #write_timestamp
-  #create_video
+  write_timestamp
+  create_video
 end
 
 run
