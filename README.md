@@ -1,4 +1,6 @@
-![lapso logo](lapso_logo.png)
+![](lapso_logo.png)
+
+[Presentation Video](https://youtu.be/45GLf49cI6w)
 
 Requires:  
 - imagemagick
