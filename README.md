@@ -1,6 +1,5 @@
 ![lapso logo](lapso_logo.png)
 
-  
 Requires:  
 - imagemagick
 - ffmpeg  
@@ -10,11 +9,11 @@ To install the Ruby gem ``mini_magick``:
 ``make gem_install``
 
 To install everything in macOS:  
-``make macOS install``
+``make masos_install``
 
 To run:  
 ``make run``
 
-Settings are located in ``app.rb``.  
-If a website has thousands of entries in [Arquivo.pt](https://arquivo.pt), it will take a few hours to generate the video. You can keep tabs on the progress via the terminal output.  
+- settings are located in ``app.rb``.  
+- if a website has thousands of entries in [Arquivo.pt](https://arquivo.pt), it will take a few hours to generate the video. You can keep an eye on the progress via the terminal output.  
 The bottleneck is downloading the webpage's screenshots, as they are generated on demand.
