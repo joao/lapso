@@ -1,8 +1,8 @@
-# ![lapso logo](lapso_logo.png)
+![lapso logo](lapso_logo.png)
 
   
 Requires:  
-- imagemagick  
+- imagemagick
 - ffmpeg  
 - mini_magick (Ruby gem)
 
