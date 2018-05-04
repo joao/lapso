@@ -1,4 +1,5 @@
-# Lapso
+# ![lapso logo](lapso_logo.png)
+
   
 Requires:  
 - imagemagick  
