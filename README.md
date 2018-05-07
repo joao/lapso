@@ -1,8 +1,17 @@
-![](lapso_logo.png)
+![](lapso_logo.png)  
+### 🇵🇹🎬 Timelapser for Arquivo.pt
 
-[Presentation Video](https://youtu.be/45GLf49cI6w)
+[Presentation video](https://youtu.be/45GLf49cI6w)
 
-Requires:  
+Examples:
+- [sapo.pt](https://youtu.be/CR7ZyXg0Nr4)
+- [publico.pt](https://youtu.be/hrva9ieJMSE)
+- [presidencia.pt](https://youtu.be/NrsCsWwzeAc)
+- [portugal.gov.pt](https://youtu.be/ARKPhSnN588)
+- [psd.pt](https://youtu.be/3pgul52EFSE)
+- [dns.pt](https://youtu.be/UPay7KM9YeQ)
+
+Requires:
 - imagemagick
 - ffmpeg  
 - mini_magick (Ruby gem)
