@@ -11,7 +11,7 @@ To install the Ruby gem ``mini_magick``:
 ``make gem_install``
 
 To install everything in macOS:  
-``make masos_install``
+``make macos_install``
 
 To run:  
 ``make run``
