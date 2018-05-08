@@ -1,10 +1,10 @@
 ![](lapso_logo.png)  
 ### 🇵🇹🎬 Timelapser for Arquivo.pt
 
-[Presentation video](https://youtu.be/45GLf49cI6w)
-Built for [Prémio Arquivo.pt 2018](http://sobre.arquivo.pt/pt/colabore/candidatura-aos-premios-arquivo-pt-2018/), with [Journalism++ Porto](http://jplusplus.org/en/)
+Built for [Prémio Arquivo.pt 2018](http://sobre.arquivo.pt/pt/colabore/candidatura-aos-premios-arquivo-pt-2018/), with [Journalism++ Porto](http://jplusplus.org/en/).  
+Watch the [Presentation video](https://youtu.be/45GLf49cI6w) (in portuguese).  
 
-Examples:
+Timelapse examples:
 - [sapo.pt](https://youtu.be/CR7ZyXg0Nr4)
 - [publico.pt](https://youtu.be/hrva9ieJMSE)
 - [presidencia.pt](https://youtu.be/NrsCsWwzeAc)
