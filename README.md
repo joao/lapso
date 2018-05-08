@@ -2,6 +2,7 @@
 ### 🇵🇹🎬 Timelapser for Arquivo.pt
 
 [Presentation video](https://youtu.be/45GLf49cI6w)
+Built for [Prémio Arquivo.pt 2018](http://sobre.arquivo.pt/pt/colabore/candidatura-aos-premios-arquivo-pt-2018/), with [Journalism++ Porto](http://jplusplus.org/en/)
 
 Examples:
 - [sapo.pt](https://youtu.be/CR7ZyXg0Nr4)
