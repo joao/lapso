@@ -22,17 +22,22 @@ require 'date'
 
 
 # Settings #####################################
-URL = "publico.pt"
+URL = "rtp.pt"
 URL_FILE = "#{URL.gsub('.', '-')}_items.json"
 MAX_ITEMS = 50
 INITIAL_OFFSET = 0
 URL_FILENAME = URL.gsub('.', '-')
 JSON_DIR = "json"
 URL.split('.').size == 2 ? IMG_DIR = "img/" + URL.split('.')[0] : IMG_DIR = "img/" + URL.split('.')[0] + URL.split('.')[1] # Images directory (screenshot and timestamped)
-MOVS_DIR = "movs" # Movies export directory
-SLEEP_DURATION = 6 # Interval to sleep between requesting screenshots
-VIDEO_FPS = 10 # Experiment with this for a slower or faster video
+SLEEP_DURATION = 10 # Interval to sleep between requesting screenshots
 DAYS_INTERVAL = 7 # Days interval, if there are lots of records in the same day
+BACKGROUND_COLOR = "#141414" # Background color of the video
+VIDEO_WIDTH = "1280" # 1920 or 1280
+VIDEO_HEIGHT = "720" # 1080 or 720
+VIDEO_DIR = "videos" # Video export directory
+VIDEO_FPS = 10 # Frames/pages per second of the final video. Better change speed in a video editor
+VIDEO_ENCODING_QUALITY = "slow" # Slow gives better quality, otherwise use fast.
+
 
 
 # Global variables
@@ -87,10 +92,11 @@ def get_all_url_items
   puts "Oldest item: #{@oldest_item_date}"
   puts
 
-  puts "Retriving data:"
+  number_of_requests = (@total_items / MAX_ITEMS).to_i + 1
+  puts "Retrieving data (#{} requests):"
+  
   begin
 
-    number_of_requests = (@total_items / MAX_ITEMS).to_i + 1
     current_offset = 0
 
     # Check if JSON dir exists
@@ -214,7 +220,7 @@ def write_timestamp
 
     # Write timestamp and crop image for 720p video
     img = MiniMagick::Image.open(screenshot)
-    img.resize "1280x"
+    img.resize "#{VIDEO_WIDTH}x"
     img.crop "0x720+0+0"
     img.combine_options do |i|
       i.fill "black"
@@ -246,10 +252,10 @@ def create_video
   puts "Creating video..."
 
   # Check if video folder exists
-  Dir.mkdir(MOVS_DIR) unless Dir.exist?(MOVS_DIR)
+  Dir.mkdir(VIDEO_DIR) unless Dir.exist?(VIDEO_DIR)
 
   # FFMPEG conversion of image sequence into video
-  ffmpeg_command = "ffmpeg -r #{VIDEO_FPS} -pattern_type glob -i \'#{IMG_DIR}/timestamp/*.png\' -s hd720 -vcodec libx264 -crf 18 -preset slow -pix_fmt yuv420p #{MOVS_DIR}/#{URL_FILENAME}.mp4"
+  ffmpeg_command = "ffmpeg -r #{VIDEO_FPS} -pattern_type glob -i \'#{IMG_DIR}/timestamp/*.png\' -s hd#{VIDEO_HEIGHT} -vcodec libx264 -crf 18 -preset #{VIDEO_ENCODING_QUALITY} -pix_fmt yuv420p #{VIDEO_DIR}/#{URL_FILENAME}.mp4"
   system(ffmpeg_command)
 
   puts "Video created! :)"
